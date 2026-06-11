@@ -234,36 +234,6 @@
     .demo-frame.reveal{ transform:none; }
   }
 
-  /* ---------- giant fixed spinning hexagon (full-screen watermark) ---------- */
-  .hero-deco{ position:fixed; inset:0; z-index:-1; pointer-events:none; display:flex; align-items:center; justify-content:center; overflow:hidden; transform-origin:90% 50%; will-change:transform, opacity; }
-  .hero-deco .hx{ position:absolute; left:90%; top:50%; color:var(--ink); will-change:transform; transform:translate3d(-50%,calc(-50% + var(--py,0px)),0); }
-  .hx .spin{ display:block; width:100%; height:auto; overflow:visible; transform-origin:50% 50%; }
-  .spin{ animation:hxspin var(--dur,60s) linear infinite; }
-  .spin-rev{ animation-direction:reverse; }
-  .ring-spin{ transform-box:fill-box; transform-origin:50% 50%; animation:hxspin var(--dur,54s) linear infinite; }
-  @keyframes hxspin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
-  .hero-deco .stroke{ stroke:currentColor; fill:none; stroke-width:2.2; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
-  .hero-deco .hx-outer{ width:132vmin; opacity:.06; }
-  .hero-deco .hx-mid{   width:90vmin;  opacity:.10; }
-  .hero-deco .hx-inner{ width:44vmin;  opacity:1; }
-  .hero-deco .dot{ position:absolute; width:10px; height:10px; border-radius:50%; background:var(--ink); opacity:.18; transform:translate3d(0,var(--py,0),0); will-change:transform; }
-  .hx-key{ opacity:0; }
-  body.loaded .hx-key{ transition:opacity .55s ease 1.45s; opacity:1; }
-  .hx-draw{ stroke-dasharray:1; stroke-dashoffset:1; }
-  @media (prefers-reduced-motion: no-preference){
-    body.loaded .hx-draw{ animation:hxdraw 2.2s cubic-bezier(.6,.05,.2,1) forwards; }
-    body.loaded .hx-outer .hx-draw{ animation-delay:.15s; }
-    body.loaded .hx-mid .hx-draw{   animation-delay:.45s; }
-    body.loaded .hx-inner .hx-draw{ animation-delay:.7s; }
-  }
-  @keyframes hxdraw{ to{ stroke-dashoffset:0; } }
-  @media (prefers-reduced-motion: reduce){
-    .hx-draw{ stroke-dashoffset:0 !important; }
-    .hx-key{ opacity:1 !important; }
-    .spin, .ring-spin{ animation:none !important; }
-    .hero-deco .hx{ transform:translate3d(-50%,-50%,0) !important; }
-    .hero-deco .dot{ transform:none !important; }
-  }
 
   /* ---------- modal ---------- */
   .modal-scrim{ position:fixed; inset:0; z-index:120; background:color-mix(in oklab, var(--dark) 55%, transparent); backdrop-filter:blur(4px); opacity:0; visibility:hidden; transition:opacity .25s ease, visibility .25s; display:flex; align-items:center; justify-content:center; padding:24px; }
@@ -314,32 +284,6 @@
 
 <div class="scroll-progress" id="prog"></div>
 
-<!-- ============ GIANT BACKGROUND HEXAGON ============ -->
-<div class="hero-deco" aria-hidden="true">
-  <div class="hx hx-outer" data-px="34">
-    <svg class="spin" style="--dur:64s" viewBox="0 0 64 64" fill="none">
-      <path class="stroke hx-draw" pathLength="1" d="M32 6 L53.5 18.5 V45.5 L32 58 L10.5 45.5 V18.5 Z"/>
-    </svg>
-  </div>
-  <div class="hx hx-mid" data-px="-22">
-    <svg class="spin spin-rev" style="--dur:46s" viewBox="0 0 64 64" fill="none">
-      <path class="stroke hx-draw" pathLength="1" d="M32 6 L53.5 18.5 V45.5 L32 58 L10.5 45.5 V18.5 Z"/>
-    </svg>
-  </div>
-  <div class="hx hx-inner" data-px="-48">
-    <svg viewBox="0 0 64 64" fill="none" style="display:block;width:100%;height:auto;overflow:visible;">
-      <g class="ring-spin" style="--dur:54s">
-        <path class="stroke hx-draw" pathLength="1" d="M32 6 L53.5 18.5 V45.5 L32 58 L10.5 45.5 V18.5 Z"/>
-      </g>
-      <circle class="hx-key" cx="32" cy="28" r="5" fill="currentColor"/>
-      <path class="hx-key" d="M29.4 30 h5.2 l1.3 11 h-7.8 Z" fill="currentColor"/>
-    </svg>
-  </div>
-  <span class="dot" data-px="-62" style="left:13%; top:23%;"></span>
-  <span class="dot" data-px="46" style="right:15%; top:31%;"></span>
-  <span class="dot" data-px="72" style="left:21%; bottom:21%;"></span>
-</div>
-
 <!-- ============ NAV ============ -->
 <header class="nav" id="nav">
   <div class="wrap nav-inner">
@@ -351,7 +295,7 @@
       <a href="#security">Security</a>
     </nav>
     <div class="nav-right">
-      <button class="btn btn-dark" data-demo style="padding:11px 18px; font-size:14px;">Request a Demo</button>
+      <button class="btn btn-dark" data-demo style="padding:11px 18px; font-size:14px;">Contact sales</button>
       <div class="overflow" id="overflow">
         <button class="overflow-btn" id="overflowBtn" aria-label="More">
           <i></i><i></i><i></i>
@@ -377,7 +321,7 @@
       <h1 class="hero-title">Private AI for your <em>most sensitive documents.</em></h1>
       <p class="hero-sub">SancturaAI is a fully air-gapped, self-hosted assistant that answers questions over your private files. It runs entirely on local hardware, with no internet connection, no API calls, and no data ever leaving the building.</p>
       <div class="hero-cta">
-        <button class="btn btn-dark" data-demo>Request a Demo <span class="arr">→</span></button>
+        <button class="btn btn-dark" data-demo>Contact sales <span class="arr">→</span></button>
         <a href="#demo" class="btn btn-ghost">Watch the demo</a>
       </div>
       <div class="hero-stats">
@@ -387,21 +331,6 @@
       </div>
     </div>
 
-  </div>
-</section>
-
-<!-- ============ DEMO ============ -->
-<section class="sec-pad" id="demo" style="padding-top:0;">
-  <div class="wrap">
-    <div class="sec-head center reveal">
-      <div class="eyebrow">Live demo</div>
-      <h2>Watch it answer, with the<br/>network unplugged.</h2>
-      <p>A real session: ask a question and get a cited answer, set access per folder, then watch a user without clearance get nothing back.</p>
-    </div>
-    <div class="demo-frame reveal">
-      <video src="demo.mp4" autoplay muted loop playsinline controls preload="metadata" aria-label="SancturaAI product demo"></video>
-    </div>
-    <p class="demo-cap reveal">Recorded on a live, air-gapped instance · no edits to the responses</p>
   </div>
 </section>
 
@@ -460,6 +389,21 @@
         <div class="meta">sees: permitted context only</div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ============ DEMO ============ -->
+<section class="sec-pad" id="demo" style="padding-top:0;">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <div class="eyebrow">Live demo</div>
+      <h2>Watch it answer, with the<br/>network unplugged.</h2>
+      <p>A real session: ask a question and get a cited answer, set access per folder, then watch a user without clearance get nothing back.</p>
+    </div>
+    <div class="demo-frame reveal">
+      <video src="demo.mp4" autoplay muted loop playsinline controls preload="metadata" aria-label="SancturaAI product demo"></video>
+    </div>
+    <p class="demo-cap reveal">Recorded on a live, air-gapped instance · no edits to the responses</p>
   </div>
 </section>
 
@@ -651,7 +595,7 @@
       <h2>Your data never<br/>leaves the room.</h2>
       <p style="color:var(--on-dark-2);">See SancturaAI answer questions over your own documents, on hardware you control, with a network cable you can unplug.</p>
       <div class="hero-cta">
-        <button class="btn btn-light" data-demo>Request a Demo <span class="arr">→</span></button>
+        <button class="btn btn-light" data-demo>Contact sales <span class="arr">→</span></button>
         <a href="#how" class="btn" style="color:var(--on-dark); border:1px solid var(--dark-line);">See the architecture</a>
       </div>
     </div>
@@ -667,7 +611,7 @@
         <a href="#product">Product</a>
         <a href="#how">How it works</a>
         <a href="#security">Security</a>
-        <a href="#" data-demo>Request a Demo</a>
+        <a href="#" data-demo>Contact sales</a>
       </div>
     </div>
     <div class="ft-copy">
@@ -678,13 +622,13 @@
 
 <!-- ============ MODAL ============ -->
 <div class="modal-scrim" id="scrim">
-  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Request a demo">
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Contact sales">
     <button class="modal-x" id="modalX" aria-label="Close">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
     </button>
 
     <form class="modal-form" id="demoForm" novalidate>
-      <h3>Request a Demo</h3>
+      <h3>Contact sales</h3>
       <p class="msub">See it run air-gapped on your own documents. We'll reach out to schedule a private walkthrough.</p>
 
       <div class="field-row">
@@ -882,34 +826,6 @@
     modal.classList.add('done');
   });
 
-  /* ---- hero hexagon: parallax drift + draw-in + scroll expand/fade ---- */
-  var pEls = [].slice.call(document.querySelectorAll('[data-px]'));
-  var deco = document.querySelector('.hero-deco');
-  var pTicking = false;
-  function pxFrame(){
-    pTicking = false;
-    var vh = window.innerHeight || 1;
-    for(var i=0; i<pEls.length; i++){
-      var el = pEls[i], r = el.getBoundingClientRect();
-      var d = ((r.top + r.height/2) - vh/2) / vh;
-      var sp = parseFloat(el.getAttribute('data-px')) || 0;
-      el.style.setProperty('--py', (-d * sp).toFixed(1) + 'px');
-    }
-    /* expand + fade the whole hexagon as the hero scrolls away */
-    if(deco){
-      var sc = window.scrollY || document.documentElement.scrollTop || 0;
-      var t = Math.min(sc / (vh * 0.85), 1);   // 0 at top -> 1 after ~0.85 viewport
-      var ease = t * (2 - t);                   // ease-out
-      deco.style.transform = 'rotate(' + (t * 75).toFixed(2) + 'deg) scale(' + (1 + ease * 1.6).toFixed(3) + ')';
-      deco.style.opacity = (1 - ease).toFixed(3);
-    }
-  }
-  function pxScroll(){ if(!pTicking){ pTicking = true; requestAnimationFrame(pxFrame); } }
-  if(!rmotion && pEls.length){
-    pxFrame();
-    window.addEventListener('scroll', pxScroll, {passive:true});
-    window.addEventListener('resize', pxScroll, {passive:true});
-  }
   requestAnimationFrame(function(){ requestAnimationFrame(function(){ document.body.classList.add('loaded'); }); });
   window.addEventListener('load', function(){ document.body.classList.add('loaded'); });
 })();
