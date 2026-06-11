@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SancturaAI · Private, offline AI for your documents</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* cool clinical grayscale */
+    --bg:        oklch(0.992 0.003 250);
+    --paper:     oklch(1 0 0);
+    --ink:       oklch(0.205 0.012 255);
+    --ink-2:     oklch(0.30 0.012 255);
+    --gray:      oklch(0.52 0.012 255);
+    --gray-2:    oklch(0.62 0.010 255);
+    --line:      oklch(0.90 0.006 255);
+    --line-2:    oklch(0.84 0.008 255);
+    --dark:      oklch(0.185 0.010 255);
+    --dark-2:    oklch(0.235 0.011 255);
+    --dark-line: oklch(0.33 0.012 255);
+    --on-dark:   oklch(0.97 0.003 255);
+    --on-dark-2: oklch(0.70 0.008 255);
+    --maxw: 1240px;
+    --gutter: clamp(20px, 5vw, 72px);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Archivo', system-ui, sans-serif;
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  ::selection{ background:var(--ink); color:var(--bg); }
+  a{color:inherit; text-decoration:none;}
+  img,svg{display:block;}
+  .wrap{ max-width:var(--maxw); margin:0 auto; padding-inline:var(--gutter); }
+
+  .mono{ font-family:'Archivo', system-ui, sans-serif; }
+  .eyebrow{
+    font-family:'Archivo', sans-serif;
+    font-size:12px; font-weight:500; letter-spacing:0.18em;
+    text-transform:uppercase; color:var(--gray);
+  }
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    font-family:'Archivo',sans-serif; font-weight:700; font-size:15px;
+    padding:14px 22px; border-radius:7px; cursor:pointer;
+    border:1px solid transparent; transition:transform .15s ease, background .2s ease, box-shadow .2s ease, color .2s ease, border-color .2s ease;
+    white-space:nowrap;
+  }
+  .btn-dark{ background:var(--ink); color:var(--bg); }
+  .btn-dark:hover{ background:#000; transform:translateY(-1px); box-shadow:0 10px 24px -12px rgba(0,0,0,.5); }
+  .btn-ghost{ background:transparent; color:var(--ink); border-color:var(--line-2); }
+  .btn-ghost:hover{ border-color:var(--ink); transform:translateY(-1px); }
+  .btn-light{ background:var(--on-dark); color:var(--dark); }
+  .btn-light:hover{ background:#fff; transform:translateY(-1px); }
+  .btn .arr{ transition:transform .2s ease; }
+  .btn:hover .arr{ transform:translateX(3px); }
+
+  /* ---------- nav ---------- */
+  header.nav{
+    position:sticky; top:0; z-index:60;
+    background:color-mix(in oklab, var(--bg) 82%, transparent);
+    backdrop-filter:blur(12px) saturate(1.2);
+    border-bottom:1px solid transparent;
+    transition:border-color .3s ease, background .3s ease;
+  }
+  header.nav.scrolled{ border-bottom-color:var(--line); background:color-mix(in oklab, var(--bg) 92%, transparent); }
+  .nav-inner{ display:flex; align-items:center; gap:28px; height:72px; }
+  .wordmark{ font-weight:900; font-size:21px; letter-spacing:-0.02em; display:flex; align-items:center; }
+  .wordmark .lite{ color:var(--gray-2); font-weight:700; }
+  .nav-logo{ width:22px; height:22px; margin-right:10px; color:var(--ink); flex:none; }
+  nav.links{ display:flex; gap:30px; margin-left:14px; }
+  nav.links a{ font-size:14.5px; font-weight:500; color:var(--ink-2); position:relative; padding:6px 0; }
+  nav.links a::after{ content:""; position:absolute; left:0; bottom:0; height:1.5px; width:0; background:var(--ink); transition:width .22s ease; }
+  nav.links a:hover{ color:var(--ink); }
+  nav.links a:hover::after{ width:100%; }
+  .nav-right{ margin-left:auto; display:flex; align-items:center; gap:10px; }
+
+  .overflow{ position:relative; }
+  .overflow-btn{
+    width:38px; height:38px; border:1px solid var(--line-2); border-radius:7px; background:transparent;
+    display:flex; align-items:center; justify-content:center; gap:3px; cursor:pointer; transition:border-color .2s, background .2s;
+  }
+  .overflow-btn:hover{ border-color:var(--ink); }
+  .overflow-btn i{ width:3.5px; height:3.5px; border-radius:50%; background:var(--ink-2); display:block; }
+  .overflow-menu{
+    position:absolute; right:0; top:46px; width:212px; background:var(--paper);
+    border:1px solid var(--line-2); border-radius:10px; padding:7px; box-shadow:0 18px 44px -18px rgba(20,24,33,.35);
+    opacity:0; visibility:hidden; transform:translateY(-6px); transition:opacity .18s ease, transform .18s ease, visibility .18s;
+  }
+  .overflow.open .overflow-menu{ opacity:1; visibility:visible; transform:translateY(0); }
+  .overflow-menu a{ display:flex; align-items:center; justify-content:space-between; padding:9px 11px; border-radius:6px; font-size:14px; color:var(--ink-2); }
+  .overflow-menu a:hover{ background:var(--bg); color:var(--ink); }
+  .overflow-menu .sep{ height:1px; background:var(--line); margin:6px 4px; }
+  .overflow-menu .tag{ font-size:10px; color:var(--gray-2); font-family:'Archivo',sans-serif; }
+
+  /* ---------- hero ---------- */
+  .hero{ padding-top:clamp(52px, 8vw, 104px); padding-bottom:clamp(48px, 7vw, 96px); }
+  .hero-grid{ display:grid; grid-template-columns:1fr; gap:clamp(28px,5vw,64px); align-items:center; }
+  .hero-copy{ max-width:70%; }
+  .hero-badge{
+    display:inline-flex; align-items:center; gap:9px; margin-bottom:26px;
+    border:1px solid var(--line-2); border-radius:100px; padding:7px 14px 7px 11px;
+    font-family:'Archivo',sans-serif; font-size:11.5px; letter-spacing:.04em; color:var(--ink-2);
+  }
+  .hero-badge .pulse{ width:7px; height:7px; border-radius:50%; background:var(--ink); position:relative; }
+  .hero-badge .pulse::after{ content:""; position:absolute; inset:-4px; border-radius:50%; border:1.4px solid var(--ink); opacity:.45; animation:ring 2.6s ease-out infinite; }
+  @keyframes ring{ 0%{transform:scale(.6);opacity:.6;} 100%{transform:scale(1.7);opacity:0;} }
+  @media (prefers-reduced-motion: reduce){ .hero-badge .pulse::after{ animation:none; } }
+
+  h1.hero-title{
+    font-weight:900; font-size:clamp(40px, 6.0vw, 78px); line-height:1.08; letter-spacing:-0.035em;
+    margin:0 0 26px; text-wrap:balance;
+  }
+  h1.hero-title em{ font-style:normal; position:relative; white-space:nowrap; }
+  h1.hero-title em::after{ content:""; position:absolute; left:0; right:0; bottom:0.06em; height:0.10em; background:var(--ink); }
+  .hero-sub{ font-size:clamp(16px,1.35vw,18.5px); color:var(--gray); max-width:30em; margin:0 0 32px; line-height:1.62; }
+  .hero-cta{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .hero-cta .note{ font-size:13px; color:var(--gray-2); font-family:'Archivo',sans-serif; }
+  .hero-stats{ display:flex; gap:34px; margin-top:46px; padding-top:30px; border-top:1px solid var(--line); }
+  .hero-stats .s b{ display:block; font-weight:900; font-size:25px; letter-spacing:-0.02em; }
+  .hero-stats .s span{ font-size:12.5px; color:var(--gray); font-family:'Archivo',sans-serif; letter-spacing:.02em; }
+
+  .hero-art{ position:relative; }
+  .hero-art svg{ width:100%; height:auto; overflow:visible; }
+
+  /* ---------- section scaffolding ---------- */
+  section{ position:relative; }
+  .sec-pad{ padding-block:clamp(64px, 9vw, 124px); }
+  .sec-head{ max-width:none; margin-bottom:clamp(40px,5vw,64px); }
+  .sec-head.center{ text-align:center; margin-inline:auto; max-width:760px; }
+  .sec-head h2{ font-weight:900; font-size:clamp(30px,3.6vw,46px); letter-spacing:-0.03em; line-height:1.02; margin:14px 0 0; text-wrap:balance; }
+  .sec-head p{ color:var(--gray); font-size:17px; margin:18px 0 0; max-width:54ch; line-height:1.6; }
+  .sec-head.center p{ margin-inline:auto; }
+
+  /* ---------- demo video ---------- */
+  .demo-frame{ position:relative; max-width:1040px; margin:0 auto; border:1px solid var(--line-2); border-radius:16px; overflow:hidden; background:var(--dark); box-shadow:0 44px 100px -46px rgba(20,24,33,.55); }
+  .demo-frame video{ display:block; width:100%; height:auto; }
+  .demo-cap{ text-align:center; margin:18px auto 0; font-family:'Archivo',sans-serif; font-size:12px; color:var(--gray-2); letter-spacing:.03em; }
+
+  /* ---------- how it works ---------- */
+  .flow{ display:grid; grid-template-columns:1fr auto 1fr auto 1fr; align-items:stretch; gap:0; }
+  .flow-step{ padding:32px; border:1px solid var(--line); border-radius:14px; background:var(--paper); transition:border-color .25s ease, transform .25s ease, box-shadow .25s ease; cursor:default; }
+  .flow-step:hover{ border-color:var(--ink); transform:translateY(-3px); box-shadow:0 22px 48px -28px rgba(20,24,33,.4); }
+  .flow-step .idx{ font-family:'Archivo',sans-serif; font-size:12px; color:var(--gray-2); }
+  .flow-ico{ width:52px; height:52px; border:1.5px solid var(--ink); border-radius:11px; display:flex; align-items:center; justify-content:center; margin:18px 0 22px; }
+  .flow-step h3{ font-weight:800; font-size:20px; letter-spacing:-0.01em; margin:0 0 9px; }
+  .flow-step p{ color:var(--gray); font-size:14.5px; margin:0; line-height:1.58; }
+  .flow-step .meta{ margin-top:18px; font-family:'Archivo',sans-serif; font-size:11px; color:var(--gray-2); letter-spacing:.04em; padding-top:14px; border-top:1px solid var(--line); }
+  .flow-arrow{ display:flex; align-items:center; justify-content:center; width:64px; color:var(--gray-2); }
+  .flow-arrow svg{ width:30px; height:30px; }
+
+  /* ---------- feature grid ---------- */
+  .feat-grid{ display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--line); border-left:1px solid var(--line); }
+  .feat{ padding:38px 34px 40px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); position:relative; transition:background .25s ease; }
+  .feat:hover{ background:var(--paper); }
+  .feat .fnum{ position:absolute; top:24px; right:28px; font-family:'Archivo',sans-serif; font-size:11px; color:var(--line-2); transition:color .25s; }
+  .feat:hover .fnum{ color:var(--gray-2); }
+  .feat-ico{ width:46px; height:46px; display:flex; align-items:center; justify-content:center; margin-bottom:24px; color:var(--ink); }
+  .feat h3{ font-weight:800; font-size:18.5px; letter-spacing:-0.01em; margin:0 0 11px; }
+  .feat p{ color:var(--gray); font-size:14.5px; margin:0; line-height:1.58; }
+
+  /* ---------- security band (dark) ---------- */
+  .band{ background:var(--dark); color:var(--on-dark); }
+  .band .eyebrow{ color:var(--on-dark-2); }
+  .band-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:clamp(40px,6vw,90px); align-items:center; }
+  .band h2{ font-weight:900; font-size:clamp(30px,3.6vw,46px); letter-spacing:-0.03em; line-height:1.04; margin:14px 0 22px; }
+  .band > .wrap > .band-grid p.lead{ color:var(--on-dark-2); font-size:17px; line-height:1.62; margin:0; max-width:42ch; }
+  .proofs{ display:grid; gap:14px; }
+  .proof{ display:flex; gap:18px; align-items:flex-start; padding:22px 24px; border:1px solid var(--dark-line); border-radius:12px; background:var(--dark-2); transition:border-color .25s, transform .25s; }
+  .proof:hover{ border-color:var(--on-dark-2); transform:translateX(4px); }
+  .proof .pico{ width:40px; height:40px; flex:none; border:1.4px solid var(--on-dark-2); border-radius:9px; display:flex; align-items:center; justify-content:center; color:var(--on-dark); }
+  .proof h4{ margin:0 0 4px; font-weight:700; font-size:16px; }
+  .proof p{ margin:0; color:var(--on-dark-2); font-size:13.5px; line-height:1.55; }
+  .proof .pt{ font-family:'Archivo',sans-serif; font-size:10.5px; color:var(--on-dark-2); letter-spacing:.05em; display:block; margin-top:9px; }
+
+  /* ---------- use cases ---------- */
+  .uc-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
+  .uc{ border:1px solid var(--line); border-radius:16px; overflow:hidden; background:var(--paper); transition:border-color .25s, transform .25s, box-shadow .25s; }
+  .uc:hover{ border-color:var(--ink); transform:translateY(-4px); box-shadow:0 28px 56px -32px rgba(20,24,33,.42); }
+  .uc-top{ height:128px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:center; background:
+      repeating-linear-gradient(135deg, transparent 0 11px, color-mix(in oklab, var(--ink) 4%, transparent) 11px 12px); color:var(--ink); }
+  .uc-body{ padding:26px 26px 30px; }
+  .uc-body .tag{ font-family:'Archivo',sans-serif; font-size:11px; color:var(--gray-2); letter-spacing:.06em; }
+  .uc-body h3{ font-weight:800; font-size:21px; letter-spacing:-0.015em; margin:9px 0 10px; }
+  .uc-body p{ color:var(--gray); font-size:14.5px; margin:0 0 18px; line-height:1.58; }
+  .uc-body ul{ margin:0; padding:0; list-style:none; display:grid; gap:9px; }
+  .uc-body li{ font-size:13.5px; color:var(--ink-2); display:flex; gap:10px; align-items:center; }
+  .uc-body li::before{ content:""; width:6px; height:6px; background:var(--ink); transform:rotate(45deg); flex:none; }
+
+  /* ---------- final CTA ---------- */
+  .final{ text-align:center; }
+  .final h2{ font-weight:900; font-size:clamp(34px,5vw,68px); letter-spacing:-0.035em; line-height:1.04; margin:0 auto 22px; max-width:18ch; text-wrap:balance; }
+  .final p{ color:var(--gray); font-size:18px; max-width:46ch; margin:0 auto 34px; }
+  .final .hero-cta{ justify-content:center; }
+
+  /* ---------- footer ---------- */
+  footer.ft{ border-top:1px solid var(--line); padding-block:46px; }
+  .ft-inner{ display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+  .ft-inner .wordmark{ font-size:18px; }
+  .ft-links{ display:flex; gap:26px; margin-left:auto; flex-wrap:wrap; }
+  .ft-links a{ font-size:13.5px; color:var(--gray); }
+  .ft-links a:hover{ color:var(--ink); }
+  .ft-copy{ width:100%; margin-top:26px; padding-top:22px; border-top:1px solid var(--line); display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; font-family:'Archivo',sans-serif; font-size:11.5px; color:var(--gray-2); letter-spacing:.03em; }
+
+  /* ---------- reveal ---------- */
+  .reveal{ opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in{ opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce){ .reveal{ opacity:1; transform:none; transition:none; } }
+
+  /* ---------- scroll progress + staggered reveals ---------- */
+  .scroll-progress{ position:fixed; top:0; left:0; height:3px; width:0; background:var(--ink); z-index:100; will-change:width; }
+  [data-stagger] > *{ opacity:0; transform:translateY(24px); transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); transition-delay:calc(var(--i, 0) * 75ms); }
+  [data-stagger].in > *{ opacity:1; transform:none; }
+  .demo-frame.reveal{ transform:translateY(28px) scale(.97); }
+  .demo-frame.reveal.in{ transform:none; }
+  @media (prefers-reduced-motion: reduce){
+    .scroll-progress{ display:none; }
+    [data-stagger] > *{ opacity:1; transform:none; transition:none; }
+    .demo-frame.reveal{ transform:none; }
+  }
+
+  /* ---------- giant fixed spinning hexagon (full-screen watermark) ---------- */
+  .hero-deco{ position:fixed; inset:0; z-index:-1; pointer-events:none; display:flex; align-items:center; justify-content:center; overflow:hidden; transform-origin:90% 50%; will-change:transform, opacity; }
+  .hero-deco .hx{ position:absolute; left:90%; top:50%; color:var(--ink); will-change:transform; transform:translate3d(-50%,calc(-50% + var(--py,0px)),0); }
+  .hx .spin{ display:block; width:100%; height:auto; overflow:visible; transform-origin:50% 50%; }
+  .spin{ animation:hxspin var(--dur,60s) linear infinite; }
+  .spin-rev{ animation-direction:reverse; }
+  .ring-spin{ transform-box:fill-box; transform-origin:50% 50%; animation:hxspin var(--dur,54s) linear infinite; }
+  @keyframes hxspin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+  .hero-deco .stroke{ stroke:currentColor; fill:none; stroke-width:2.2; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+  .hero-deco .hx-outer{ width:132vmin; opacity:.06; }
+  .hero-deco .hx-mid{   width:90vmin;  opacity:.10; }
+  .hero-deco .hx-inner{ width:44vmin;  opacity:1; }
+  .hero-deco .dot{ position:absolute; width:10px; height:10px; border-radius:50%; background:var(--ink); opacity:.18; transform:translate3d(0,var(--py,0),0); will-change:transform; }
+  .hx-key{ opacity:0; }
+  body.loaded .hx-key{ transition:opacity .55s ease 1.45s; opacity:1; }
+  .hx-draw{ stroke-dasharray:1; stroke-dashoffset:1; }
+  @media (prefers-reduced-motion: no-preference){
+    body.loaded .hx-draw{ animation:hxdraw 2.2s cubic-bezier(.6,.05,.2,1) forwards; }
+    body.loaded .hx-outer .hx-draw{ animation-delay:.15s; }
+    body.loaded .hx-mid .hx-draw{   animation-delay:.45s; }
+    body.loaded .hx-inner .hx-draw{ animation-delay:.7s; }
+  }
+  @keyframes hxdraw{ to{ stroke-dashoffset:0; } }
+  @media (prefers-reduced-motion: reduce){
+    .hx-draw{ stroke-dashoffset:0 !important; }
+    .hx-key{ opacity:1 !important; }
+    .spin, .ring-spin{ animation:none !important; }
+    .hero-deco .hx{ transform:translate3d(-50%,-50%,0) !important; }
+    .hero-deco .dot{ transform:none !important; }
+  }
+
+  /* ---------- modal ---------- */
+  .modal-scrim{ position:fixed; inset:0; z-index:120; background:color-mix(in oklab, var(--dark) 55%, transparent); backdrop-filter:blur(4px); opacity:0; visibility:hidden; transition:opacity .25s ease, visibility .25s; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .modal-scrim.open{ opacity:1; visibility:visible; }
+  .modal{ width:min(540px, 100%); background:var(--paper); border:1px solid var(--line-2); border-radius:16px; padding:34px clamp(24px,4vw,40px) 32px; box-shadow:0 40px 90px -30px rgba(20,24,33,.5); transform:translateY(14px) scale(.98); transition:transform .28s cubic-bezier(.2,.7,.2,1); max-height:92vh; overflow:auto; }
+  .modal-scrim.open .modal{ transform:none; }
+  .modal-x{ position:absolute; top:18px; right:18px; width:34px; height:34px; border:1px solid var(--line-2); border-radius:8px; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--ink-2); transition:border-color .2s,color .2s; }
+  .modal-x:hover{ border-color:var(--ink); color:var(--ink); }
+  .modal h3{ font-weight:900; font-size:26px; letter-spacing:-0.025em; margin:4px 0 8px; }
+  .modal .msub{ color:var(--gray); font-size:14.5px; margin:0 0 26px; }
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:12.5px; font-weight:600; margin-bottom:7px; color:var(--ink-2); font-family:'Archivo',sans-serif; letter-spacing:.03em; }
+  .field input,.field select{ width:100%; font-family:'Archivo',sans-serif; font-size:15px; color:var(--ink); padding:13px 14px; border:1px solid var(--line-2); border-radius:9px; background:var(--bg); transition:border-color .2s, box-shadow .2s; }
+  .field input:focus,.field select:focus{ outline:none; border-color:var(--ink); box-shadow:0 0 0 3px color-mix(in oklab, var(--ink) 12%, transparent); }
+  .field.invalid input,.field.invalid select{ border-color:oklch(0.55 0.16 25); }
+  .field .err{ display:none; font-family:'Archivo',sans-serif; font-size:11px; color:oklch(0.52 0.17 25); margin-top:6px; }
+  .field.invalid .err{ display:block; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .modal .btn-dark{ width:100%; justify-content:center; margin-top:8px; }
+  .modal .fineprint{ font-family:'Archivo',sans-serif; font-size:11px; color:var(--gray-2); text-align:center; margin:16px 0 0; line-height:1.5; }
+  .modal-success{ text-align:center; padding:20px 0 8px; display:none; }
+  .modal.done .modal-form{ display:none; }
+  .modal.done .modal-success{ display:block; }
+  .modal-success .check{ width:64px; height:64px; border:1.6px solid var(--ink); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 22px; }
+  .modal-success h3{ margin-bottom:10px; }
+  .modal-success p{ color:var(--gray); font-size:15px; margin:0 auto 26px; max-width:34ch; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 980px){
+    .hero-grid{ grid-template-columns:1fr; }
+    .hero-art{ order:-1; max-width:440px; margin-inline:auto; }
+    .band-grid{ grid-template-columns:1fr; }
+    .feat-grid{ grid-template-columns:repeat(2,1fr); }
+    .uc-grid{ grid-template-columns:repeat(2,1fr); }
+    .flow{ grid-template-columns:1fr; gap:14px; }
+    .flow-arrow{ width:auto; height:46px; transform:rotate(90deg); }
+  }
+  @media (max-width: 760px){
+    nav.links{ display:none; }
+    .uc-grid{ grid-template-columns:1fr; }
+    .feat-grid{ grid-template-columns:1fr; }
+    .hero-stats{ gap:24px; flex-wrap:wrap; }
+    .field-row{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scroll-progress" id="prog"></div>
+
+<!-- ============ GIANT BACKGROUND HEXAGON ============ -->
+<div class="hero-deco" aria-hidden="true">
+  <div class="hx hx-outer" data-px="34">
+    <svg class="spin" style="--dur:64s" viewBox="0 0 64 64" fill="none">
+      <path class="stroke hx-draw" pathLength="1" d="M32 6 L53.5 18.5 V45.5 L32 58 L10.5 45.5 V18.5 Z"/>
+    </svg>
+  </div>
+  <div class="hx hx-mid" data-px="-22">
+    <svg class="spin spin-rev" style="--dur:46s" viewBox="0 0 64 64" fill="none">
+      <path class="stroke hx-draw" pathLength="1" d="M32 6 L53.5 18.5 V45.5 L32 58 L10.5 45.5 V18.5 Z"/>
+    </svg>
+  </div>
+  <div class="hx hx-inner" data-px="-48">
+    <svg viewBox="0 0 64 64" fill="none" style="display:block;width:100%;height:auto;overflow:visible;">
+      <g class="ring-spin" style="--dur:54s">
+        <path class="stroke hx-draw" pathLength="1" d="M32 6 L53.5 18.5 V45.5 L32 58 L10.5 45.5 V18.5 Z"/>
+      </g>
+      <circle class="hx-key" cx="32" cy="28" r="5" fill="currentColor"/>
+      <path class="hx-key" d="M29.4 30 h5.2 l1.3 11 h-7.8 Z" fill="currentColor"/>
+    </svg>
+  </div>
+  <span class="dot" data-px="-62" style="left:13%; top:23%;"></span>
+  <span class="dot" data-px="46" style="right:15%; top:31%;"></span>
+  <span class="dot" data-px="72" style="left:21%; bottom:21%;"></span>
+</div>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a href="#top" class="wordmark"><svg class="nav-logo" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 6 L53.5 18.5 V45.5 L32 58 L10.5 45.5 V18.5 Z" stroke="currentColor" stroke-width="3.6" stroke-linejoin="round"/><circle cx="32" cy="29" r="5.5" fill="currentColor"/><path d="M29.5 31 h5 l1.3 11 h-7.6 Z" fill="currentColor"/></svg>Sanctura<span class="lite">AI</span></a>
+    <nav class="links">
+      <a href="#product">Product</a>
+      <a href="#demo">Demo</a>
+      <a href="#how">How it works</a>
+      <a href="#security">Security</a>
+    </nav>
+    <div class="nav-right">
+      <button class="btn btn-dark" data-demo style="padding:11px 18px; font-size:14px;">Request a Demo</button>
+      <div class="overflow" id="overflow">
+        <button class="overflow-btn" id="overflowBtn" aria-label="More">
+          <i></i><i></i><i></i>
+        </button>
+        <div class="overflow-menu">
+          <a href="#how">Architecture<span class="tag">deep-dive</span></a>
+          <a href="#security">Threat model<span class="tag">PDF</span></a>
+          <div class="sep"></div>
+          <a href="#" data-demo>Contact sales</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<a id="top"></a>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="product">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <div class="hero-badge"><span class="pulse"></span>NO NETWORK · NO CLOUD · NO TELEMETRY</div>
+      <h1 class="hero-title">Private AI for your <em>most sensitive documents.</em></h1>
+      <p class="hero-sub">SancturaAI is a fully air-gapped, self-hosted assistant that answers questions over your private files. It runs entirely on local hardware, with no internet connection, no API calls, and no data ever leaving the building.</p>
+      <div class="hero-cta">
+        <button class="btn btn-dark" data-demo>Request a Demo <span class="arr">→</span></button>
+        <a href="#demo" class="btn btn-ghost">Watch the demo</a>
+      </div>
+      <div class="hero-stats">
+        <div class="s"><b>100%</b><span>offline / air-gapped</span></div>
+        <div class="s"><b>0</b><span>outbound packets</span></div>
+        <div class="s"><b>1×</b><span>workstation GPU</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ DEMO ============ -->
+<section class="sec-pad" id="demo" style="padding-top:0;">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <div class="eyebrow">Live demo</div>
+      <h2>Watch it answer, with the<br/>network unplugged.</h2>
+      <p>A real session: ask a question and get a cited answer, set access per folder, then watch a user without clearance get nothing back.</p>
+    </div>
+    <div class="demo-frame reveal">
+      <video src="demo.mp4" autoplay muted loop playsinline controls preload="metadata" aria-label="SancturaAI product demo"></video>
+    </div>
+    <p class="demo-cap reveal">Recorded on a live, air-gapped instance · no edits to the responses</p>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="sec-pad" id="how">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <h2>Two agents. One can retrieve.<br/>Only the other can speak.</h2>
+      <p>Access control is enforced at the tool layer, not in a prompt. Every result is filtered by role and ownership <em>before</em> it ever reaches a language model, so the model physically cannot leak what it isn't allowed to see.</p>
+    </div>
+
+    <div class="flow" data-stagger>
+      <div class="flow-step">
+        <div class="idx">STEP 01</div>
+        <div class="flow-ico">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/>
+            <path d="M8 11h6M11 8v6" stroke-width="1.4"/>
+          </svg>
+        </div>
+        <h3>Router / Retriever</h3>
+        <p>An agent reads the question and decides which search tool to use: semantic vector search, exact match, or a structured field lookup.</p>
+        <div class="meta">picks: vector · exact · field</div>
+      </div>
+
+      <div class="flow-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+      </div>
+
+      <div class="flow-step">
+        <div class="idx">STEP 02</div>
+        <div class="flow-ico">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l8 3v6c0 5-3.5 8-8 11-4.5-3-8-6-8-11V5z"/>
+            <path d="M4 12h16" stroke-width="1.4"/>
+          </svg>
+        </div>
+        <h3>Access Filter</h3>
+        <p>Retrieved results pass through RBAC + ownership checks at the data layer. Anything the user isn't cleared for is dropped here, never seen by the model.</p>
+        <div class="meta">role + ownership · enforced</div>
+      </div>
+
+      <div class="flow-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+      </div>
+
+      <div class="flow-step">
+        <div class="idx">STEP 03</div>
+        <div class="flow-ico">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a8 8 0 1 1-3-6.2"/><path d="M8 12l3 3 6-7" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <h3>Answerer</h3>
+        <p>A separate agent generates the response, and only ever sees the documents the user is actually allowed to read. Isolation by construction.</p>
+        <div class="meta">sees: permitted context only</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURE GRID ============ -->
+<section class="sec-pad" id="features" style="padding-top:0;">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <h2>Built for places where data<br/>cannot touch the cloud.</h2>
+    </div>
+
+    <div class="feat-grid" data-stagger>
+      <!-- 1 -->
+      <div class="feat">
+        <span class="fnum">01</span>
+        <div class="feat-ico">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="0.6" fill="currentColor"/>
+            <line x1="4" y1="4" x2="20" y2="20" stroke-width="1.7"/>
+          </svg>
+        </div>
+        <h3>100% Offline / Air-Gapped</h3>
+        <p>Runs with no network connection, ever. There is no cloud endpoint to breach because there is no cloud, and no outbound traffic to monitor.</p>
+      </div>
+      <!-- 2 -->
+      <div class="feat">
+        <span class="fnum">02</span>
+        <div class="feat-ico">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><line x1="12" y1="14.5" x2="12" y2="17"/>
+          </svg>
+        </div>
+        <h3>Enforced Access Control</h3>
+        <p>RBAC and ownership checks live at the data layer, not the prompt. Permissions can't be talked around; they're applied before retrieval returns.</p>
+      </div>
+      <!-- 3 -->
+      <div class="feat">
+        <span class="fnum">03</span>
+        <div class="feat-ico">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="7.5" cy="12" r="3.5"/><circle cx="16.5" cy="12" r="3.5"/><line x1="12" y1="4" x2="12" y2="20" stroke-dasharray="2 2.5"/>
+          </svg>
+        </div>
+        <h3>Two-Agent Isolation</h3>
+        <p>Retriever and answerer are separated so context is filtered before generation. The model that writes answers never holds the keys to the index.</p>
+      </div>
+      <!-- 4 -->
+      <div class="feat">
+        <span class="fnum">04</span>
+        <div class="feat-ico">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3l8 4.5-8 4.5-8-4.5z"/><path d="M4 12l8 4.5 8-4.5"/><path d="M4 16.5L12 21l8-4.5"/>
+          </svg>
+        </div>
+        <h3>Pluggable Domains</h3>
+        <p>Drop-in schemas for medical, banking, and more define roles, ownership, and ID rules. Adapt the system to a new vertical without touching the core.</p>
+      </div>
+      <!-- 5 -->
+      <div class="feat">
+        <span class="fnum">05</span>
+        <div class="feat-ico">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M8.5 14.5c1.2-1.8 4.8-1.8 6 0-1.2 1.8-4.8 1.8-6 0z"/><circle cx="11.5" cy="14.5" r="0.9"/>
+          </svg>
+        </div>
+        <h3>Document Ingest with Vision</h3>
+        <p>VLM-assisted OCR indexes PDFs, images, DOCX, XLSX, CSV and Markdown into a local FAISS index, scanned and photographed documents included.</p>
+      </div>
+      <!-- 6 -->
+      <div class="feat">
+        <span class="fnum">06</span>
+        <div class="feat-ico">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="9" width="16" height="12" rx="2"/><path d="M8 9V6.5a4 4 0 0 1 8 0V9"/><circle cx="12" cy="14" r="1.6"/><line x1="12" y1="15.6" x2="12" y2="18"/>
+          </svg>
+        </div>
+        <h3>Encrypted Vault</h3>
+        <p>Credentials and data sit behind a locked / unlocked encrypted store. At rest, everything stays sealed until an authorized operator opens it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECURITY BAND ============ -->
+<section class="band sec-pad" id="security">
+  <div class="wrap">
+    <div class="band-grid">
+      <div class="reveal">
+        <h2>We tried to break it. On purpose.</h2>
+        <p class="lead">Air-gapping closes the network. Hardening closes the model. SancturaAI ships with an adversarial test suite that actively attempts prompt injection and data exfiltration, and is evaluated across multiple models to prove routing and access enforcement hold.</p>
+        <div style="margin-top:30px;">
+          <button class="btn btn-light" data-demo>Request the threat model <span class="arr">→</span></button>
+        </div>
+      </div>
+
+      <div class="proofs" data-stagger>
+        <div class="proof">
+          <div class="pico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8-8 11-4.5-3-8-6-8-11V5z"/><path d="M9 12l2 2 4-4.5"/></svg>
+          </div>
+          <div>
+            <h4>Adversarial-tested</h4>
+            <p>Passes prompt-injection and exfiltration attack suites; the model is hardened against being coaxed into revealing data it shouldn't.</p>
+          </div>
+        </div>
+        <div class="proof">
+          <div class="pico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1"/><rect x="14" y="4" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="6" rx="1"/><rect x="14" y="14" width="7" height="6" rx="1"/></svg>
+          </div>
+          <div>
+            <h4>Cross-model evaluated</h4>
+            <p>Tool routing and access enforcement are verified across multiple local models; behavior is a property of the system, not one lucky model.</p>
+          </div>
+        </div>
+        <div class="proof">
+          <div class="pico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="1.5"/><line x1="3" y1="20" x2="21" y2="20"/><path d="M8 9l2.5 3L8 15M13 15h4" stroke-width="1.4"/></svg>
+          </div>
+          <div>
+            <h4>Runs on modest hardware</h4>
+            <p>No GPU required. It runs CPU-only on a standard machine with as little as 8GB of RAM, and a single workstation GPU just makes it faster. No datacenter, no fleet, no external dependency.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ USE CASES ============ -->
+<section class="sec-pad" id="usecases">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <h2>For the rooms where the cloud<br/>isn't an option.</h2>
+      <p>CISOs, compliance officers, and IT leads who want LLM productivity without cloud risk, in environments where a leak isn't an incident, it's a violation.</p>
+    </div>
+
+    <div class="uc-grid" data-stagger>
+      <div class="uc">
+        <div class="uc-top">
+          <svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M4 12h16" stroke-width="1.6"/><circle cx="12" cy="12" r="9"/></svg>
+        </div>
+        <div class="uc-body">
+          <div class="tag">SECTOR_01</div>
+          <h3>Healthcare</h3>
+          <p>Query patient records, clinical notes and imaging reports without a single byte of PHI crossing the network boundary.</p>
+          <ul><li>PHI never leaves the building</li><li>Role scoping per care team</li><li>HIPAA-aligned by architecture</li></ul>
+        </div>
+      </div>
+      <div class="uc">
+        <div class="uc-top">
+          <svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5"/><line x1="4" y1="9" x2="4" y2="19"/><line x1="9" y1="9" x2="9" y2="19"/><line x1="15" y1="9" x2="15" y2="19"/><line x1="20" y1="9" x2="20" y2="19"/><line x1="2.5" y1="19.5" x2="21.5" y2="19.5"/></svg>
+        </div>
+        <div class="uc-body">
+          <div class="tag">SECTOR_02</div>
+          <h3>Banking & Finance</h3>
+          <p>Search contracts, filings and customer files behind ownership filters, so answers stay scoped to exactly who is permitted to ask.</p>
+          <ul><li>Ownership-filtered retrieval</li><li>Auditable access at data layer</li><li>No third-party model calls</li></ul>
+        </div>
+      </div>
+      <div class="uc">
+        <div class="uc-top">
+          <svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M12 7v6M9 10h6" stroke-width="1.4"/></svg>
+        </div>
+        <div class="uc-body">
+          <div class="tag">SECTOR_03</div>
+          <h3>Government & Defense</h3>
+          <p>Operate inside classified enclaves where connectivity is forbidden. Pluggable domains map to clearance levels and need-to-know.</p>
+          <ul><li>True air-gap deployment</li><li>Clearance-aware domains</li><li>Hardened against exfiltration</li></ul>
+        </div>
+      </div>
+      <div class="uc">
+        <div class="uc-top">
+          <svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4L2 9l10 5 10-5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><line x1="22" y1="9" x2="22" y2="14"/></svg>
+        </div>
+        <div class="uc-body">
+          <div class="tag">SECTOR_04</div>
+          <h3>University & Research</h3>
+          <p>Let faculty and students query research data, student records and grants without exposing them to the cloud or third-party models.</p>
+          <ul><li>FERPA-aligned by architecture</li><li>Per-department role scoping</li><li>Keeps unpublished research private</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="band sec-pad" id="cta">
+  <div class="wrap final">
+    <div class="reveal">
+      <h2>Your data never<br/>leaves the room.</h2>
+      <p style="color:var(--on-dark-2);">See SancturaAI answer questions over your own documents, on hardware you control, with a network cable you can unplug.</p>
+      <div class="hero-cta">
+        <button class="btn btn-light" data-demo>Request a Demo <span class="arr">→</span></button>
+        <a href="#how" class="btn" style="color:var(--on-dark); border:1px solid var(--dark-line);">See the architecture</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="ft">
+  <div class="wrap">
+    <div class="ft-inner">
+      <a href="#top" class="wordmark"><svg class="nav-logo" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 6 L53.5 18.5 V45.5 L32 58 L10.5 45.5 V18.5 Z" stroke="currentColor" stroke-width="3.6" stroke-linejoin="round"/><circle cx="32" cy="29" r="5.5" fill="currentColor"/><path d="M29.5 31 h5 l1.3 11 h-7.6 Z" fill="currentColor"/></svg>Sanctura<span class="lite">AI</span></a>
+      <div class="ft-links">
+        <a href="#product">Product</a>
+        <a href="#how">How it works</a>
+        <a href="#security">Security</a>
+        <a href="#" data-demo>Request a Demo</a>
+      </div>
+    </div>
+    <div class="ft-copy">
+      <span>© 2026 SancturaAI · Self-hosted · Air-gapped by design</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-scrim" id="scrim">
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Request a demo">
+    <button class="modal-x" id="modalX" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+    </button>
+
+    <form class="modal-form" id="demoForm" novalidate>
+      <h3>Request a Demo</h3>
+      <p class="msub">See it run air-gapped on your own documents. We'll reach out to schedule a private walkthrough.</p>
+
+      <div class="field-row">
+        <div class="field" data-field="name">
+          <label>Full name</label>
+          <input type="text" name="name" autocomplete="name" placeholder="Jordan Vega" />
+          <span class="err">Please enter your name</span>
+        </div>
+        <div class="field" data-field="org">
+          <label>Organization</label>
+          <input type="text" name="org" autocomplete="organization" placeholder="Mercy Health System" />
+          <span class="err">Please enter your organization</span>
+        </div>
+      </div>
+
+      <div class="field" data-field="role">
+        <label>Role</label>
+        <select name="role">
+          <option value="">Select your role…</option>
+          <option>CISO / Security leadership</option>
+          <option>Compliance / Risk officer</option>
+          <option>IT / Infrastructure lead</option>
+          <option>Engineering</option>
+          <option>Other</option>
+        </select>
+        <span class="err">Please select a role</span>
+      </div>
+
+      <div class="field" data-field="email">
+        <label>Work email</label>
+        <input type="email" name="email" autocomplete="email" placeholder="jordan@org.gov" />
+        <span class="err">Enter a valid work email</span>
+      </div>
+
+      <button type="submit" class="btn btn-dark">Request access <span class="arr">→</span></button>
+      <p class="fineprint">No data leaves your environment in the demo. We never ingest your documents.</p>
+    </form>
+
+    <div class="modal-success">
+      <div class="check">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg>
+      </div>
+      <h3>Request received.</h3>
+      <p id="successMsg">Thanks. A member of our team will reach out within one business day to arrange your private walkthrough.</p>
+      <button class="btn btn-ghost" id="successClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---- nav scrolled state ---- */
+  var nav = document.getElementById('nav');
+  var onScroll = function(){ nav.classList.toggle('scrolled', window.scrollY > 8); };
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  /* ---- overflow menu ---- */
+  var overflow = document.getElementById('overflow');
+  var overflowBtn = document.getElementById('overflowBtn');
+  overflowBtn.addEventListener('click', function(e){ e.stopPropagation(); overflow.classList.toggle('open'); });
+  document.addEventListener('click', function(e){ if(!overflow.contains(e.target)) overflow.classList.remove('open'); });
+
+  /* ---- scroll progress bar ---- */
+  var prog = document.getElementById('prog');
+  function updateProg(){
+    var d = document.documentElement;
+    var max = d.scrollHeight - d.clientHeight;
+    var p = max > 0 ? (window.scrollY || d.scrollTop) / max : 0;
+    if(prog) prog.style.width = (Math.min(Math.max(p,0),1) * 100) + '%';
+  }
+  updateProg();
+  window.addEventListener('scroll', updateProg, {passive:true});
+  window.addEventListener('resize', updateProg, {passive:true});
+
+  /* ---- stagger: index children so they cascade in ---- */
+  [].slice.call(document.querySelectorAll('[data-stagger]')).forEach(function(c){
+    [].slice.call(c.children).forEach(function(ch, i){ ch.style.setProperty('--i', i); });
+  });
+
+  /* ---- count-up on the hero stats ---- */
+  var rmotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function countUp(el){
+    var m = el.textContent.trim().match(/^(\d+)(.*)$/);
+    if(!m){ return; }
+    var target = parseInt(m[1], 10), suffix = m[2], dur = 1100, start = null;
+    function step(ts){
+      if(!start) start = ts;
+      var p = Math.min((ts - start) / dur, 1);
+      var e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(e * target) + suffix;
+      if(p < 1) requestAnimationFrame(step); else el.textContent = target + suffix;
+    }
+    requestAnimationFrame(step);
+  }
+  var statsWrap = document.querySelector('.hero-stats');
+  if(statsWrap && !rmotion){
+    var statsDone = false;
+    var fireStats = function(){
+      if(statsDone) return; statsDone = true;
+      [].slice.call(statsWrap.querySelectorAll('.s b')).forEach(countUp);
+    };
+    if('IntersectionObserver' in window){
+      var sio = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ fireStats(); sio.disconnect(); } }); }, {threshold:0.4});
+      sio.observe(statsWrap);
+    } else { fireStats(); }
+    setTimeout(fireStats, 1300);
+  }
+
+  /* ---- reveal on scroll (fail-open: content must never stay hidden) ---- */
+  var reveals = [].slice.call(document.querySelectorAll('.reveal, [data-stagger]'));
+  function reveal(el){ el.classList.add('in'); }
+  function revealAll(){ reveals.forEach(reveal); }
+  function revealInView(){
+    var h = window.innerHeight || document.documentElement.clientHeight;
+    reveals.forEach(function(el){
+      if(el.classList.contains('in')) return;
+      var r = el.getBoundingClientRect();
+      if(r.top < h * 0.92 && r.bottom > 0) reveal(el);
+    });
+  }
+
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, {threshold:0.08, rootMargin:'0px 0px -6% 0px'});
+    reveals.forEach(function(r){ io.observe(r); });
+  }
+  // Fallbacks that work even if IntersectionObserver never delivers callbacks:
+  revealInView();
+  window.addEventListener('scroll', revealInView, {passive:true});
+  window.addEventListener('resize', revealInView, {passive:true});
+  // Safety net: guarantee everything is visible shortly after load.
+  window.addEventListener('load', revealInView);
+  setTimeout(revealAll, 1100);
+
+  /* ---- modal ---- */
+  var scrim = document.getElementById('scrim');
+  var modal = document.getElementById('modal');
+  var form = document.getElementById('demoForm');
+  var lastFocus = null;
+
+  function openModal(){
+    lastFocus = document.activeElement;
+    modal.classList.remove('done');
+    scrim.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ var f = form.querySelector('input'); if(f) f.focus(); }, 120);
+  }
+  function closeModal(){
+    scrim.classList.remove('open');
+    document.body.style.overflow = '';
+    if(lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('[data-demo]').forEach(function(b){
+    b.addEventListener('click', function(e){ e.preventDefault(); openModal(); });
+  });
+  document.getElementById('modalX').addEventListener('click', closeModal);
+  document.getElementById('successClose').addEventListener('click', closeModal);
+  scrim.addEventListener('click', function(e){ if(e.target === scrim) closeModal(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && scrim.classList.contains('open')) closeModal(); });
+
+  /* ---- validation ---- */
+  function setInvalid(field, bad){ field.classList.toggle('invalid', bad); }
+  var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  form.querySelectorAll('input, select').forEach(function(el){
+    el.addEventListener('input', function(){ var fld = el.closest('.field'); if(fld.classList.contains('invalid')) validateField(fld); });
+    el.addEventListener('change', function(){ var fld = el.closest('.field'); if(fld.classList.contains('invalid')) validateField(fld); });
+  });
+
+  function validateField(fld){
+    var key = fld.getAttribute('data-field');
+    var el = fld.querySelector('input, select');
+    var v = (el.value || '').trim();
+    var bad = false;
+    if(key === 'email'){ bad = !emailRe.test(v); }
+    else { bad = v.length === 0; }
+    setInvalid(fld, bad);
+    return !bad;
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var fields = form.querySelectorAll('.field');
+    var ok = true;
+    fields.forEach(function(fld){ if(!validateField(fld)) ok = false; });
+    if(!ok){ var firstBad = form.querySelector('.field.invalid input, .field.invalid select'); if(firstBad) firstBad.focus(); return; }
+
+    var name = (form.querySelector('[name=name]').value || '').trim().split(' ')[0];
+    document.getElementById('successMsg').textContent =
+      'Thanks' + (name ? ', ' + name : '') + '. A member of our team will reach out within one business day to arrange your private, air-gapped walkthrough.';
+    modal.classList.add('done');
+  });
+
+  /* ---- hero hexagon: parallax drift + draw-in + scroll expand/fade ---- */
+  var pEls = [].slice.call(document.querySelectorAll('[data-px]'));
+  var deco = document.querySelector('.hero-deco');
+  var pTicking = false;
+  function pxFrame(){
+    pTicking = false;
+    var vh = window.innerHeight || 1;
+    for(var i=0; i<pEls.length; i++){
+      var el = pEls[i], r = el.getBoundingClientRect();
+      var d = ((r.top + r.height/2) - vh/2) / vh;
+      var sp = parseFloat(el.getAttribute('data-px')) || 0;
+      el.style.setProperty('--py', (-d * sp).toFixed(1) + 'px');
+    }
+    /* expand + fade the whole hexagon as the hero scrolls away */
+    if(deco){
+      var sc = window.scrollY || document.documentElement.scrollTop || 0;
+      var t = Math.min(sc / (vh * 0.85), 1);   // 0 at top -> 1 after ~0.85 viewport
+      var ease = t * (2 - t);                   // ease-out
+      deco.style.transform = 'rotate(' + (t * 75).toFixed(2) + 'deg) scale(' + (1 + ease * 1.6).toFixed(3) + ')';
+      deco.style.opacity = (1 - ease).toFixed(3);
+    }
+  }
+  function pxScroll(){ if(!pTicking){ pTicking = true; requestAnimationFrame(pxFrame); } }
+  if(!rmotion && pEls.length){
+    pxFrame();
+    window.addEventListener('scroll', pxScroll, {passive:true});
+    window.addEventListener('resize', pxScroll, {passive:true});
+  }
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ document.body.classList.add('loaded'); }); });
+  window.addEventListener('load', function(){ document.body.classList.add('loaded'); });
+})();
+</script>
+
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#1c1f26"/>
+    <g fill="none" stroke="#f3f4f6" stroke-width="2.4" stroke-linejoin="round">
+      <polygon points="50,28 68,38 50,48 32,38" fill="#1c1f26"/>
+      <polygon points="32,38 50,48 50,68 32,58" fill="#1c1f26"/>
+      <polygon points="68,38 50,48 50,68 68,58" fill="#1c1f26"/>
+      <path d="M50 55 l9 3 v6 c0 5 -4 8 -9 10 c-5 -2 -9 -5 -9 -10 v-6 z" fill="#1c1f26" stroke-width="2"/>
+    </g>
+  </svg>
+</template>
+
+</body>
+</html>
