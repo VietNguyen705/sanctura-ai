@@ -110,8 +110,8 @@
 
   /* ---------- hero ---------- */
   .hero{ padding-top:clamp(52px, 8vw, 104px); padding-bottom:clamp(48px, 7vw, 96px); }
-  .hero-grid{ display:grid; grid-template-columns:1fr; gap:clamp(28px,5vw,64px); align-items:center; }
-  .hero-copy{ max-width:70%; }
+  .hero-grid{ display:grid; grid-template-columns:minmax(0,1.04fr) minmax(0,0.96fr); gap:clamp(28px,5vw,64px); align-items:center; }
+  .hero-copy{ max-width:none; }
   .hero-badge{
     display:inline-flex; align-items:center; gap:9px; margin-bottom:26px;
     border:1px solid var(--line-2); border-radius:100px; padding:7px 14px 7px 11px;
@@ -134,8 +134,47 @@
   .hero-stats .s b{ display:block; font-weight:900; font-size:25px; letter-spacing:-0.02em; }
   .hero-stats .s span{ font-size:12.5px; color:var(--gray); font-family:'Archivo',sans-serif; letter-spacing:.02em; }
 
-  .hero-art{ position:relative; }
-  .hero-art svg{ width:100%; height:auto; overflow:visible; }
+  /* hero art: air-gapped vault round-trip */
+  .hero-art{ display:flex; justify-content:center; }
+  .ha-frame{ position:relative; padding:clamp(20px,4vw,32px); }
+  .ha-frame::before{ content:""; position:absolute; inset:12px; border:1.5px solid var(--line); border-radius:24px; }
+  .ha-badge{ position:absolute; top:2px; right:2px; z-index:6; width:42px; height:42px; border-radius:50%; background:var(--paper); border:1.5px solid var(--line-2); display:flex; align-items:center; justify-content:center; box-shadow:0 10px 24px -14px rgba(20,24,33,.5); }
+  .ha-badge svg{ stroke:var(--ink); }
+  .ha-scene{ position:relative; z-index:3; width:min(320px,100%); display:flex; flex-direction:column; align-items:center; gap:clamp(46px,9vw,62px); }
+  .ha-cb{ width:100%; max-width:300px; background:var(--paper); border:1px solid var(--line-2); border-radius:16px; overflow:hidden; box-shadow:0 30px 70px -44px rgba(20,24,33,.5); }
+  .ha-cb .hd{ display:flex; align-items:center; gap:9px; padding:11px 13px; border-bottom:1px solid var(--line); }
+  .ha-cb .av{ width:23px; height:23px; border-radius:6px; background:var(--ink); display:flex; align-items:center; justify-content:center; }
+  .ha-cb .hd b{ font-size:12.5px; }
+  .ha-cb .off{ margin-left:auto; font-size:10px; font-weight:600; color:var(--ink); display:flex; align-items:center; gap:4px; }
+  .ha-cb .off i{ width:6px; height:6px; border-radius:50%; background:var(--ink); animation:hapulse 1.8s ease-in-out infinite; animation-play-state:var(--ha-play,running); font-style:normal; }
+  @keyframes hapulse{ 0%,100%{box-shadow:0 0 0 0 color-mix(in oklab,var(--ink) 45%,transparent);} 70%{box-shadow:0 0 0 5px transparent;} }
+  .ha-thread{ padding:13px; display:flex; flex-direction:column; gap:9px; min-height:120px; }
+  .ha-bubble{ max-width:88%; padding:9px 12px; border-radius:12px; font-size:12.5px; line-height:1.5; }
+  .ha-me{ align-self:flex-end; background:var(--ink); color:var(--on-dark); border-bottom-right-radius:5px; }
+  .ha-ai{ align-self:flex-start; background:oklch(0.96 0.004 255); color:var(--ink-2); border-bottom-left-radius:5px; }
+  .ha-src{ font-size:10px; color:var(--gray); margin-top:6px; display:flex; gap:5px; }
+  .ha-typing i{ display:inline-block; width:6px; height:6px; margin:0 1px; border-radius:50%; background:var(--gray-2); animation:hatdot 1.2s infinite; font-style:normal; }
+  .ha-typing i:nth-child(2){animation-delay:.2s;} .ha-typing i:nth-child(3){animation-delay:.4s;}
+  @keyframes hatdot{ 0%,60%,100%{transform:translateY(0);opacity:.4;} 30%{transform:translateY(-4px);opacity:1;} }
+  .ha-fade{ opacity:0; transform:translateY(8px); animation:hafade .4s ease forwards; }
+  @keyframes hafade{ to{opacity:1; transform:none;} }
+  .ha-vault{ width:120px; display:flex; flex-direction:column; align-items:center; gap:11px; }
+  .ha-box{ width:clamp(76px,20vw,88px); aspect-ratio:1; border-radius:22px; background:linear-gradient(160deg,var(--ink-2),var(--ink)); display:flex; align-items:center; justify-content:center; position:relative; transition:transform .25s; box-shadow:0 22px 44px -20px rgba(20,24,33,.7), inset 0 1px 0 rgba(255,255,255,.08); }
+  .ha-box svg{ stroke:var(--on-dark); position:relative; z-index:2; }
+  .ha-box::before{ content:""; position:absolute; inset:0; border-radius:22px; background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.10) 48%,transparent 62%); background-size:240% 240%; animation:hashimmer 4.5s linear infinite; animation-play-state:var(--ha-play,running); }
+  @keyframes hashimmer{ 0%{background-position:140% 0;} 100%{background-position:-60% 0;} }
+  .ha-box::after{ content:""; position:absolute; inset:-3px; border-radius:24px; animation:habreathe 3s ease-in-out infinite; animation-play-state:var(--ha-play,running); }
+  @keyframes habreathe{ 0%,100%{box-shadow:0 0 18px -2px color-mix(in oklab,var(--ink) 22%,transparent);} 50%{box-shadow:0 0 30px 2px color-mix(in oklab,var(--ink) 34%,transparent);} }
+  .ha-box.hit{ transform:scale(1.09); }
+  .ha-box .ring{ position:absolute; inset:-3px; border-radius:24px; border:1.6px solid var(--ink); opacity:0; z-index:1; }
+  .ha-box.hit .ring{ animation:havring .6s ease-out; }
+  @keyframes havring{ 0%{opacity:.55; transform:scale(.92);} 100%{opacity:0; transform:scale(1.3);} }
+  .ha-lab{ display:flex; align-items:center; gap:6px; white-space:nowrap; font-family:'Archivo',sans-serif; font-size:9.5px; letter-spacing:.11em; color:var(--ink-2); background:var(--paper); border:1px solid var(--line-2); border-radius:999px; padding:4px 11px; box-shadow:0 6px 16px -12px rgba(20,24,33,.5); }
+  .ha-lab i{ width:5px; height:5px; border-radius:50%; background:var(--ink); font-style:normal; }
+  .ha-wire{ position:absolute; left:50%; transform:translateX(-50%); width:1.5px; z-index:1; }
+  .ha-wire::before{ content:""; position:absolute; inset:0; background:repeating-linear-gradient(180deg,var(--line-2) 0 4px,transparent 4px 9px); }
+  .ha-dot{ position:absolute; left:0; top:0; width:9px; height:9px; margin:-4.5px 0 0 -4.5px; border-radius:50%; background:var(--ink); z-index:4; opacity:0; box-shadow:0 0 0 3px color-mix(in oklab,var(--ink) 16%,transparent); }
+  @media (prefers-reduced-motion: reduce){ .ha-box::before, .ha-box::after, .ha-cb .off i{ animation:none; } }
 
   /* ---------- section scaffolding ---------- */
   section{ position:relative; }
@@ -264,7 +303,7 @@
   @media (max-width: 980px){
     .hero-grid{ grid-template-columns:1fr; }
     .hero-copy{ max-width:100%; }
-    .hero-art{ order:-1; max-width:440px; margin-inline:auto; }
+    .hero-art{ max-width:440px; margin-inline:auto; margin-top:8px; }
     .band-grid{ grid-template-columns:1fr; }
     .feat-grid{ grid-template-columns:repeat(2,1fr); }
     .uc-grid{ grid-template-columns:repeat(2,1fr); }
@@ -328,6 +367,24 @@
         <div class="s"><b>100%</b><span>offline / air-gapped</span></div>
         <div class="s"><b>0</b><span>outbound packets</span></div>
         <div class="s"><b>1×</b><span>workstation GPU</span></div>
+      </div>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+      <div class="ha-frame">
+        <span class="ha-badge"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="0.7" fill="currentColor" stroke="none"/><line x1="3" y1="3" x2="21" y2="21"/></svg></span>
+        <div class="ha-scene">
+          <span class="ha-wire"></span>
+          <div class="ha-cb" data-chat>
+            <div class="hd"><span class="av"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 3 19 7.5V16.5L12 21 5 16.5V7.5Z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="11" r="2.4" fill="#fff"/></svg></span><b>SancturaAI</b><span class="off"><i></i>OFFLINE</span></div>
+            <div class="ha-thread" data-thread></div>
+          </div>
+          <div class="ha-vault" data-vault>
+            <div class="ha-box"><span class="ring"></span><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.6 3 3 7 3s7-1.4 7-3V6"/><path d="M5 12v6c0 1.6 3 3 7 3s7-1.4 7-3v-6"/><rect x="9.3" y="9.6" width="5.4" height="4.2" rx="1" fill="var(--ink)"/><path d="M10.4 9.6V8.6a1.6 1.6 0 0 1 3.2 0v1"/></svg></div>
+            <span class="ha-lab"><i></i>ENCRYPTED VAULT</span>
+          </div>
+          <span class="ha-dot" data-dot></span>
+        </div>
       </div>
     </div>
 
@@ -828,6 +885,46 @@
 
   requestAnimationFrame(function(){ requestAnimationFrame(function(){ document.body.classList.add('loaded'); }); });
   window.addEventListener('load', function(){ document.body.classList.add('loaded'); });
+})();
+</script>
+
+<script>
+/* hero air-gapped vault round-trip */
+(function(){
+  var scene=document.querySelector('.hero-art .ha-scene'); if(!scene) return;
+  var thread=scene.querySelector('[data-thread]'), chat=scene.querySelector('[data-chat]'),
+      box=scene.querySelector('.ha-box'), dot=scene.querySelector('[data-dot]'), wire=scene.querySelector('.ha-wire');
+  var sleep=function(ms){return new Promise(function(r){setTimeout(r,ms);});};
+  var raf2=function(){return new Promise(function(r){requestAnimationFrame(function(){requestAnimationFrame(r);});});};
+  function center(el){ var r=el.getBoundingClientRect(), s=scene.getBoundingClientRect(); return {x:r.left-s.left+r.width/2, y:r.top-s.top+r.height/2}; }
+  function layoutWire(){ var c=chat.getBoundingClientRect(), v=box.getBoundingClientRect(), s=scene.getBoundingClientRect();
+    var top=c.bottom-s.top, bot=v.top-s.top; wire.style.top=top+'px'; wire.style.height=Math.max(0,bot-top)+'px'; }
+  function mkUser(){ var e=document.createElement('div'); e.className='ha-bubble ha-me ha-fade'; e.textContent='Summarize the Q3 vendor risk review.'; return e; }
+  function mkAnswer(){ var e=document.createElement('div'); e.className='ha-bubble ha-ai ha-fade';
+    e.innerHTML='Three vendors flagged: two need updated SOC 2 reports, one pending DPA renewal.<div class="ha-src">📄 3 records · ✓ decrypted locally</div>'; return e; }
+  async function travel(from,to,ms){ dot.style.transition='none'; dot.style.transform='translate('+from.x+'px,'+from.y+'px)'; dot.style.opacity='1';
+    await raf2(); dot.style.transition='transform '+ms+'ms cubic-bezier(.45,.05,.3,1)'; dot.style.transform='translate('+to.x+'px,'+to.y+'px)'; await sleep(ms); }
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches){ thread.appendChild(mkUser()); thread.appendChild(mkAnswer()); return; }
+  layoutWire(); window.addEventListener('resize', layoutWire, {passive:true});
+  var onScreen=true;
+  function updatePlay(){ var run=onScreen && !document.hidden; scene.style.setProperty('--ha-play', run?'running':'paused'); }
+  document.addEventListener('visibilitychange', updatePlay);
+  if('IntersectionObserver' in window){ new IntersectionObserver(function(e){ onScreen=e[0].isIntersecting; updatePlay(); }).observe(scene); }
+  (async function loop(){
+    while(true){
+      while(!onScreen || document.hidden){ await sleep(400); }
+      thread.innerHTML=''; dot.style.opacity='0';
+      thread.appendChild(mkUser()); await sleep(600);
+      var typing=document.createElement('div'); typing.className='ha-bubble ha-ai ha-typing ha-fade'; typing.innerHTML='<i></i><i></i><i></i>'; thread.appendChild(typing);
+      await sleep(250); layoutWire();
+      var c=center(chat), v=center(box);
+      await travel(c,v,760); box.classList.add('hit'); await sleep(420); box.classList.remove('hit');
+      await travel(v,c,760); dot.style.opacity='0';
+      if(typing.parentNode) thread.removeChild(typing);
+      thread.appendChild(mkAnswer());
+      await sleep(4200);
+    }
+  })();
 })();
 </script>
 
